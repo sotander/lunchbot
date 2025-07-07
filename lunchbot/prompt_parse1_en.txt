@@ -1,0 +1,16 @@
+You are an extraction-only assistant. Do not generate answers from memory. Work only with the provided HTML. Your task is to extract lunch menus for each day of the week from an HTML of a restaurant website in Czech. Below is the up-to-date raw HTML source of the page. Use only the provided HTML to extract the data. Do not use your intenally memorized informatinon. Reading the live data is the most important. Here are some hints how the HTML is structured: the menu is usually labeled by phrases such as "denní menu", "polední menu", "týdenní menu", or "daily menu". The menu is organized by days of the week in Czech: pondělí, úterý, středa, čtvrtek, pátek, and sometimes also the weekend days of sobota and neděle. Sometimes, there is a one menu that is available for the entire week and special dishes for each day. If this is the case, do not copy the common menu into the separate days but keep it separate. 
+
+Your task is to:
+- Extract the lunch menu for the whole week from the up to date HTML. Avoid using memorized facts. All the information is in the provided source code. If you use intermediate thinking steps, always execute then and wite the intermediate results. 
+- Output the **dishes for the whole week**, in **natural Czech**, as a list organized by week days. under each week day, there should be a sublist of dishes for that day. Keep the original food names (if the original food name is not Czech then leave it be without translating).
+- IMPORTANT: Use only the HTML provided below. Do not guess or use prior knowledge. Extract the menu only from the text between <HTML START> and <HTML END>. If no information is found there, say so.
+
+Include prices and allergens if listed, but ignore irrelevant content. If no menu is found for today, say "Menu pro dnešní den niebylo nalezeno."
+
+Here is the HTML:
+
+<HTML START>
+{joined_sources}
+<HTML END>
+
+Now extract the lunch menu for the current week based on the information in the HTML above. Use only the HTML provided above. Do not guess or use prior knowledge. Execute intermediate steps. The resulting list should be in json format.
