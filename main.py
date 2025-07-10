@@ -4,7 +4,7 @@ import os
 from lunchbot.config import URLS, URLS_VISUAL, MODEL_NAME
 from lunchbot.fetcher import get_domain_without_tld, get_html_with_playwright
 from lunchbot.llm_client import build_extract_prompt, build_summary_prompt, query_llm
-from lunchbot.screentaker import take_screenshot
+from lunchbot.screentaker import read_screenshot
 
 def load_url_list(file_path=URLS):
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -30,18 +30,19 @@ def main():
             if m['type'] == 'page':
                 print(f'Getting web source [{url[:80]}]...')
                 html_source = get_html_with_playwright(url)
-                print(html_source)
+                # print(html_source)
                 prompt = build_extract_prompt(html_source)
             else:
                 print(f'Taking screenshot of: [{url[:80]}]...')
-                TODO
+                ocr = read_screenshot(url)
+                prompt = build_extract_prompt(ocr)
             print(f'Querying LLM: [{MODEL_NAME}]...')
             response = query_llm(prompt, think_in_response=False)
             with open(f'./menus/{get_domain_without_tld(url)}.txt', 'w+',
                       encoding='utf-8') as f:
                 f.write(response)
     elif user_query == 'screen':
-        take_screenshot('https://udrevaka.cz/pages/poledni-menu', 'screen.png')
+        print(read_screenshot('https://udrevaka.cz/pages/poledni-menu', 'screen.png'))
     else:
         texts = []
         names = []

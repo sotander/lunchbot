@@ -5,8 +5,8 @@ import tempfile
 from playwright.sync_api import sync_playwright
 
 
-def take_screenshot(url, screenshot_path):
-    # Take screenshot
+def read_screenshot(url, screenshot_path):
+    # Take screenshot, OCR, and return text content
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
@@ -22,15 +22,16 @@ def take_screenshot(url, screenshot_path):
         # locator = page.locator("xpath=//*[normalize-space(text())='Přijmout']")
         # locator.wait_for(state="attached")
         # locator.click(force=True)
-        element = page.locator("xpath=//*[normalize-space(text())='Přijmout']").element_handle()
+        element = page.locator("xpath=//*[normalize-space(text())='Přijmout']") \
+                      .element_handle()
         page.evaluate("(el) => el.style.border = '3px solid red'", element)
         page.locator("xpath=//*[normalize-space(text())='Přijmout']").click(force=True)
         page.screenshot(path=screenshot_path)
         browser.close()
-    
+
     time.sleep(1)
 
     # Run OCR on the screenshot
     image = Image.open(screenshot_path)
     text = pytesseract.image_to_string(image, lang='eng')  # or 'ces' for Czech
-    print(text)
+    return text
