@@ -23,7 +23,7 @@ def main():
         url_list = load_url_list()
         url_visual = load_url_list(URLS_VISUAL)
 
-        combined = { url: {'type': 'page'} for url in url_list }
+        combined = {url: {'type': 'page'} for url in url_list}
         combined.update({url: {'type': 'visual'} for url in url_visual})
 
         for url, m in combined.items():
@@ -34,7 +34,7 @@ def main():
                 prompt = build_extract_prompt(html_source)
             else:
                 print(f'Taking screenshot of: [{url[:80]}]...')
-                ocr = read_screenshot(url)
+                ocr = read_screenshot(url, 'screen.png')
                 prompt = build_extract_prompt(ocr)
             print(f'Querying LLM: [{MODEL_NAME}]...')
             response = query_llm(prompt, think_in_response=False)
@@ -42,7 +42,8 @@ def main():
                       encoding='utf-8') as f:
                 f.write(response)
     elif user_query == 'screen':
-        print(read_screenshot('https://udrevaka.cz/pages/poledni-menu', 'screen.png'))
+        print(read_screenshot('https://udrevaka.cz/pages/poledni-menu',
+                              'screen.png'))
     else:
         texts = []
         names = []

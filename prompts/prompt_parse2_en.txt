@@ -1,0 +1,43 @@
+You are an extraction-only assistant. Do not generate answers from memory. Work only with the provided HTML. Your task is to extract lunch menus for each day of the week from an HTML of a restaurant website in Czech. 
+
+Below is the up-to-date raw HTML source of the page. Use only the provided HTML to extract the data. Do not use your internal memorized information. Reading the live data is the most important.
+
+### Hints about structure
+- Lunch menus are usually labeled with terms like: **"denní menu"**, **"polední menu"**, **"týdenní menu"**, or **"daily menu"**.
+- The daily menu is usually organized by weekdays in Czech: **pondělí, úterý, středa, čtvrtek, pátek**, and sometimes **sobota** and **neděle**.
+- Some websites also include a **standing weekly menu** (available the whole week), **in addition to daily specials**.
+- If such a standing weekly menu exists, **you must extract it into a separate field** and **do not repeat its dishes under each weekday**.
+- The standing menu is usually marked by phrases like **"Stálá nabídka", "Menu na celý týden", "Týdenní nabídka", "Po celý týden"** or appears before/after daily sections.
+
+### Extraction Instructions
+Your task is to:
+- Parse the HTML provided below and extract:
+  1. A list of **daily menus**, grouped by weekday (pondělí to neděle if applicable).
+  2. A **separate list for the standing weekly menu**, if present.
+- Include **original food names**, **prices**, and **allergens** if listed.
+- Output the result in a **JSON structure**, with two top-level keys: `"daily"` and `"weekly"`.
+- Do **not** guess. If something is not in the HTML, **do not fabricate**.
+- If no menu is found for today, say: `"Menu pro dnešní den nebylo nalezeno."`
+
+### Output format (JSON)
+```json
+{{
+  "daily": {{
+    "pondělí": [ {{ "soup": "Hovězí vývar", "allergens": ["1", "4", "7"] }}, {{ "dish": "Kuřecí řízek", "price": "145 Kč", "allergens": ["1", "3", "7"] }}, ... ],
+    "úterý": [ ... ],
+    ...
+  }},
+  "weekly": [
+    {{ "dish": "Hovězí guláš", "price": "165 Kč", "allergens": ["1", "7"] }},
+    ...
+  ]
+}}
+```
+
+### HTML source to analyze:
+<HTML START>
+{joined_sources}
+<HTML END>
+
+Now extract the lunch menu for the current week based only on the HTML above. Use only information within <HTML START> and <HTML END>. Execute any intermediate reasoning steps if needed.
+

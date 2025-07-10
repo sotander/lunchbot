@@ -33,5 +33,5 @@ def read_screenshot(url, screenshot_path):
 
     # Run OCR on the screenshot
     image = Image.open(screenshot_path)
-    text = pytesseract.image_to_string(image, lang='eng')  # or 'ces' for Czech
+    text = pytesseract.image_to_string(image, lang='ces')  # or 'ces' for Czech
     return text
