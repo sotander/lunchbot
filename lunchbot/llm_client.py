@@ -51,3 +51,13 @@ def query_llm(prompt, think_in_response=True):
         parts = result.split('</think>', 1)
         result = parts[1].strip() if len(parts) > 1 else result
     return result
+
+
+def chat_llm(messages, think_in_response=True):
+    '''Chat with local ollama server'''
+    response = client.chat(model=MODEL_NAME, messages=messages)
+    result = response.message.content
+    if not think_in_response:
+        parts = result.split('</think>', 1)
+        result = parts[1].strip() if len(parts) > 1 else result
+    return result

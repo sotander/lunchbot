@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
 import sys
 import os
-from lunchbot.config import URLS, URLS_VISUAL, MODEL_NAME
+from datetime import datetime, timedelta
+from lunchbot.config import URLS, URLS_VISUAL, MODEL_NAME, SYSTEM_PROMPT
 from lunchbot.fetcher import get_domain_without_tld, get_html_with_playwright
-from lunchbot.llm_client import build_extract_prompt, build_summary_prompt, query_llm
+from lunchbot.llm_client import build_extract_prompt, build_summary_prompt, \
+     query_llm, chat_llm
 from lunchbot.screentaker import read_screenshot
+
+
+def get_week() -> str:
+    today = datetime.today()
+    monday = today - timedelta(days=today.weekday())
+    sunday = monday + timedelta(days=6)
+    return f"{monday.strftime('%d-%m')}_{sunday.strftime('%d-%m')}"
 
 
 def load_url_list(file_path=URLS) -> list[str]:
@@ -35,13 +44,13 @@ def main():
     if len(sys.argv) < 2:
         print("Usage: python main.py 'your query here'")
         sys.exit(1)
-
     user_query = sys.argv[1]
-    if user_query == 'reload':
+
+    if user_query == 'week':
+        print("Retrieving weekly menus...")
         url_list = load_url_list()
         url_visual = load_urls_visual(URLS_VISUAL)
 
-        import ipdb; ipdb.set_trace()
         combined = {url: {'type': 'page'} for url in url_list}
         combined.update({url: {'type': 'visual', 'options': options}
                         for url, options in url_visual.items()})
@@ -55,22 +64,21 @@ def main():
                 print(f'Taking screenshot of: [{url[:80]}]...')
                 ocr = read_screenshot(url, 'screen.png', m['options'])
                 prompt = build_extract_prompt(ocr)
- 
+
             print(f'Querying LLM: [{MODEL_NAME}]...')
             response = query_llm(prompt, think_in_response=False)
             with open(f'./menus/{get_domain_without_tld(url)}.txt', 'w+',
                       encoding='utf-8') as f:
                 f.write(response)
+
     elif user_query == 'screen':  # for testing screens
         print(read_screenshot(
             'https://udrevaka.cz/pages/poledni-menu',
             'screen.png',
             options={'cookie_accept_text': 'Přijmout'}))
-        # print(read_screenshot(
-        #     'https://www.naruzkubrno.cz/tydenni-menu/',
-        #     'screen.png',
-        #     options={'image_id': 'wnd_ImageBlock_57548_img'}))
-    else:
+
+    elif user_query == 'day':
+        print("Summarizing stored menus...")
         texts = []
         names = []
         for fi in os.listdir('./menus'):
@@ -79,11 +87,31 @@ def main():
                 names.append(fi.rsplit('.', 1)[0])
                 with open(path, 'r', encoding='utf-8') as f:
                     texts.append(f.read())
-                    # print(f'Loaded: {texts[-1]}')
         prompt = build_summary_prompt(texts, names, user_query)
         print(f'Querying LLM: {MODEL_NAME}...')
         response = query_llm(prompt, think_in_response=False)
-        print(response)
+        # print(response)
+        with open(f'./summaries/{get_week()}.txt', 'w+',
+                  encoding='utf-8') as f:
+            f.write(response)
+
+    elif user_query == 'chat':
+        # https://www.cohorte.co/blog/using-ollama-with-python-step-by-step-guide
+        with open(SYSTEM_PROMPT, 'r', encoding='utf-8') as f:
+            system_prompt = f.read()
+        messages = [{"role": "system", "content": system_prompt}]
+        while True:
+            user_input = input("You: ")
+            if not user_input:
+                break  # exit loop on empty input
+            messages.append({"role": "user", "content": user_input})
+
+            answer = chat_llm(messages, think_in_response=False)
+            print("Bot:", answer)
+            messages.append({"role": "assistant", "content": answer})
+
+    else:
+        print('Use one of these: {week, day, chat, screen}.')
 
 
 if __name__ == "__main__":
