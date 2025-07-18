@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from lunchbot.config import URLS, URLS_VISUAL, MODEL_NAME, SYSTEM_PROMPT
 from lunchbot.fetcher import get_domain_without_tld, get_html_with_playwright
 from lunchbot.llm_client import build_extract_prompt, build_summary_prompt, \
@@ -9,11 +9,9 @@ from lunchbot.llm_client import build_extract_prompt, build_summary_prompt, \
 from lunchbot.screentaker import read_screenshot
 
 
-def get_week() -> str:
+def get_today() -> str:
     today = datetime.today()
-    monday = today - timedelta(days=today.weekday())
-    sunday = monday + timedelta(days=6)
-    return f"{monday.strftime('%d-%m')}_{sunday.strftime('%d-%m')}"
+    return f"{today.strftime('%d-%m')}"
 
 
 def load_url_list(file_path=URLS) -> list[str]:
@@ -38,6 +36,18 @@ def load_urls_visual(file_path=URLS_VISUAL) -> dict:
                 options = {}
             u_opt[url] = options
     return u_opt
+
+
+def get_todays_summary() -> str:
+    fn = f'./summaries/{get_today()}.txt'
+    try:
+        with open(fn, 'r', encoding='utf-8') as f:
+            summary = f.read()
+            print('summary retraived: ' + summary[:20] + '...')
+    except FileNotFoundError:
+        print(f'Summary for today not found at: {fn}')
+        return f'Summary for today not found at: {fn}'
+    return summary
 
 
 def main():
@@ -91,7 +101,7 @@ def main():
         print(f'Querying LLM: {MODEL_NAME}...')
         response = query_llm(prompt, think_in_response=False)
         # print(response)
-        with open(f'./summaries/{get_week()}.txt', 'w+',
+        with open(f'./summaries/{get_today()}.txt', 'w+',
                   encoding='utf-8') as f:
             f.write(response)
 
@@ -99,6 +109,8 @@ def main():
         # https://www.cohorte.co/blog/using-ollama-with-python-step-by-step-guide
         with open(SYSTEM_PROMPT, 'r', encoding='utf-8') as f:
             system_prompt = f.read()
+        system_prompt = f"{system_prompt} You can retreive a today's lunch \
+                menus by calling a function 'get_todays_summary' if needed."
         messages = [{"role": "system", "content": system_prompt}]
         while True:
             user_input = input("You: ")
@@ -106,7 +118,8 @@ def main():
                 break  # exit loop on empty input
             messages.append({"role": "user", "content": user_input})
 
-            answer = chat_llm(messages, think_in_response=False)
+            answer = chat_llm(messages, tools=[get_todays_summary],
+                              think_in_response=True)
             print("Bot:", answer)
             messages.append({"role": "assistant", "content": answer})
 
