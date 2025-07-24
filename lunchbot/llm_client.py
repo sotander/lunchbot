@@ -14,6 +14,13 @@ day_en_cs = {
 }
 
 
+def del_think(assistant_reply, think_in_response=True):
+    if not think_in_response:
+        parts = assistant_reply.split('</think>', 1)
+        assistant_reply = parts[1].strip() if len(parts) > 1 else assistant_reply
+    return assistant_reply
+
+
 def build_extract_prompt(html_source):
     '''Prompt for extracting menu from single HTML page.'''
     with open(PROMPT_BASE, 'r', encoding='utf-8') as f:
@@ -53,11 +60,27 @@ def query_llm(prompt, think_in_response=True):
     return result
 
 
-def chat_llm(messages, tools, think_in_response=True):
+def chat_llm(messages: list[dict], tools: dict, think_in_response=True):
     '''Chat with local ollama server'''
-    response = client.chat(model=MODEL_NAME, messages=messages, tools=tools)
-    result = response.message.content
-    if not think_in_response:
-        parts = result.split('</think>', 1)
-        result = parts[1].strip() if len(parts) > 1 else result
-    return result
+    response = client.chat(model=MODEL_NAME, messages=messages,
+                           tools=list(tools.values()))
+    conversation = []
+
+    # Get output message
+    assistant_reply = del_think(response.message.content, think_in_response=False)
+    conversation.append(assistant_reply)
+
+    # Tools. TODO: So far, only one tool call, no loops
+    for tool_call in (response.message.tool_calls or []):
+        func = tools.get(tool_call.function.name)
+        if func:
+            result = func(**tool_call.function.arguments)
+            messages.append({"role": "assistant",
+                             "content": f"Výsledek volání nástroje je: {result}."})
+            messages.append({"role": "user",
+                             "content": "Ok, data máme, tak teď mi odpověz na můj původní dotaz."})
+            follow_up_response = client.chat(model=MODEL_NAME,
+                                             messages=messages)
+            conversation.append(del_think(follow_up_response.message.content,
+                                          think_in_response=False))
+    return conversation

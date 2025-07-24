@@ -39,11 +39,15 @@ def load_urls_visual(file_path=URLS_VISUAL) -> dict:
 
 
 def get_todays_summary() -> str:
+    """
+    Returns today's lunch summary from a file, or an error message if not found.
+    """
+    print('called get_todays_summary')
     fn = f'./summaries/{get_today()}.txt'
     try:
         with open(fn, 'r', encoding='utf-8') as f:
             summary = f.read()
-            print('summary retraived: ' + summary[:20] + '...')
+            print('summary retreived: ' + summary[:20] + '...')
     except FileNotFoundError:
         print(f'Summary for today not found at: {fn}')
         return f'Summary for today not found at: {fn}'
@@ -114,14 +118,16 @@ def main():
         messages = [{"role": "system", "content": system_prompt}]
         while True:
             user_input = input("You: ")
-            if not user_input:
+            if not user_input or user_input == 'q' or user_input == 'quit' or user_input == 'exit':
+                print('Bye.')
                 break  # exit loop on empty input
             messages.append({"role": "user", "content": user_input})
 
-            answer = chat_llm(messages, tools=[get_todays_summary],
-                              think_in_response=True)
-            print("Bot:", answer)
-            messages.append({"role": "assistant", "content": answer})
+            self_conv = chat_llm(messages,
+                                 tools={"get_todays_summary": get_todays_summary},
+                                 think_in_response=True)
+            print("Bot:", self_conv[-1])
+            messages.append({"role": "assistant", "content": self_conv[-1]})
 
     else:
         print('Use one of these: {week, day, chat, screen}.')
