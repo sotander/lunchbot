@@ -18,7 +18,6 @@ def load_url_list(file_path=URLS) -> list[str]:
     '''Parse file, return lines as urls.'''
     with open(file_path, 'r', encoding='utf-8') as f:
         urls = [line.strip() for line in f if line.strip()]
-        print(urls)
         return urls
 
 
@@ -42,12 +41,12 @@ def get_todays_summary() -> str:
     """
     Returns today's lunch summary from a file, or an error message if not found.
     """
-    print('called get_todays_summary')
+    print('Called tool: get_todays_summary.')
     fn = f'./summaries/{get_today()}.txt'
     try:
         with open(fn, 'r', encoding='utf-8') as f:
             summary = f.read()
-            print('summary retreived: ' + summary[:20] + '...')
+            print('Summary retreived: ' + summary[:20].replace('\n', ' ') + '...')
     except FileNotFoundError:
         print(f'Summary for today not found at: {fn}')
         return f'Summary for today not found at: {fn}'
@@ -74,14 +73,19 @@ def main():
                 print(f'Getting web source [{url[:80]}]...')
                 html_source = get_html_with_playwright(url)
                 prompt = build_extract_prompt(html_source)
+                restaurant_name = get_domain_without_tld(url)
             else:
                 print(f'Taking screenshot of: [{url[:80]}]...')
                 ocr = read_screenshot(url, 'screen.png', m['options'])
                 prompt = build_extract_prompt(ocr)
+                if 'restaurant_name' in m['options']:
+                    restaurant_name = m['options']['restaurant_name']
+                else:
+                    restaurant_name = get_domain_without_tld(url)
 
             print(f'Querying LLM: [{MODEL_NAME}]...')
             response = query_llm(prompt, think_in_response=False)
-            with open(f'./menus/{get_domain_without_tld(url)}.txt', 'w+',
+            with open(f'./menus/{restaurant_name}.txt', 'w+',
                       encoding='utf-8') as f:
                 f.write(response)
 

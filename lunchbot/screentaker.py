@@ -24,16 +24,25 @@ def read_screenshot(url, screenshot_path, options):
         # special options per url
         if options.get('cookie_accept_text'):
             loc = options['cookie_accept_text']  # wnd_ImageBlock_57548_img
-            element = page \
-                .locator(f"xpath=//*[normalize-space(text())='{loc}']") \
-                .element_handle()
+            if 'first' in options:
+                print("Before screenshot: clicking first element \
+                       text={options['cookie_accept_text']}.")
+                elements_loc = page.locator(
+                        f"xpath=//*[normalize-space(text())='{loc}']").all()
+                element = elements_loc[0].element_handle()
+            else:
+                print("Before screenshot: clicking default element \
+                       text={options['cookie_accept_text']}.")
+                element = page.locator(
+                    f"xpath=//*[normalize-space(text())='{loc}']").element_handle()
             page.evaluate("(el) => el.style.border = '3px solid red'", element)
             # page.wait_for(state="attached")
             element.click(force=True)
             time.sleep(1)
         elif options.get('image_id'):
             loc = options['image_id']  # wnd_ImageBlock_57548_img
-            print(loc)
+            print("Before screenshot: clicking default element \
+                   image_id={loc}.")
             element = page \
                 .locator(f"#{loc}") \
                 .element_handle()
