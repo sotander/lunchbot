@@ -85,6 +85,8 @@ def main():
 
             print(f'Querying LLM: [{MODEL_NAME}]...')
             response = query_llm(prompt, think_in_response=False)
+
+            os.makedirs('./menus', exist_ok=True)
             with open(f'./menus/{restaurant_name}.txt', 'w+',
                       encoding='utf-8') as f:
                 f.write(response)
