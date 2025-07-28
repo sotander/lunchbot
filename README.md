@@ -23,6 +23,8 @@ Lunchbot is a Python-based application that uses local language models to extrac
 
 - Install `tesseract-ocr` (e.g., via apt):
   sudo apt install tesseract-ocr
+- Install languages for tesseract:
+  sudo apt-get install tesseract-ocr-ces
 - Install `pytesseract`:
   pip install pytesseract
 
