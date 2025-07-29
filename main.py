@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import os
+from termcolor import colored
 from datetime import datetime
 from lunchbot.config import URLS, URLS_VISUAL, MODEL_NAME, SYSTEM_PROMPT
 from lunchbot.fetcher import get_domain_without_tld, get_html_with_playwright
@@ -41,12 +42,13 @@ def get_todays_summary() -> str:
     """
     Returns today's lunch summary from a file, or an error message if not found.
     """
-    print('Called tool: get_todays_summary.')
+    print(colored('Called tool: get_todays_summary.', 'grey'))
     fn = f'./summaries/{get_today()}.txt'
     try:
         with open(fn, 'r', encoding='utf-8') as f:
             summary = f.read()
-            print('Summary retreived: ' + summary[:20].replace('\n', ' ') + '...')
+            print(colored('Summary retrieved: ' + summary[:60].replace('\n', ' ') + '...',
+                  'grey'))
     except FileNotFoundError:
         print(f'Summary for today not found at: {fn}')
         return f'Summary for today not found at: {fn}'
@@ -123,16 +125,18 @@ def main():
                 menus by calling a function 'get_todays_summary' if needed."
         messages = [{"role": "system", "content": system_prompt}]
         while True:
+            # Process user input
             user_input = input("You: ")
             if not user_input or user_input == 'q' or user_input == 'quit' or user_input == 'exit':
                 print('Bye.')
-                break  # exit loop on empty input
+                break  # exit loop on empty input or keyword TODO: exit keywords
             messages.append({"role": "user", "content": user_input})
 
+            # Gen. reply message (or more if tools are called)
             self_conv = chat_llm(messages,
                                  tools={"get_todays_summary": get_todays_summary},
-                                 think_in_response=True)
-            print("Bot:", self_conv[-1])
+                                 think_in_response=False)  # TODO; IDK if include it or not
+            print(f'Bot: {self_conv[-1]}\n')
             messages.append({"role": "assistant", "content": self_conv[-1]})
 
     else:

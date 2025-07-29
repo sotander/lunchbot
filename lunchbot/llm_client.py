@@ -1,3 +1,4 @@
+from termcolor import colored
 from datetime import datetime
 from ollama import Client
 from .config import MODEL_NAME, OLLAMA_PORT, PROMPT_BASE, PROMPT_BASE_SUMMARY
