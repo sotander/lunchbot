@@ -30,7 +30,7 @@ def build_extract_prompt(html_source):
     return p
 
 
-def build_summary_prompt(list_menus, list_names, user_query):
+def build_summary_prompt(list_menus, list_names):
     '''Prompt for summarizing menus saved as jsons.'''
     joined_menus = "\n\n".join(
         f"---\nRestaurant: {name}\nHTML:\n{menu}\n" for name, menu
@@ -45,7 +45,7 @@ def build_summary_prompt(list_menus, list_names, user_query):
     with open(PROMPT_BASE_SUMMARY, 'r', encoding='utf-8') as f:
         pb = f.read()
         p = pb.format(today=today_cs, date=date_cs, alergens=alergens,
-                      user_query=user_query, joined_sources=joined_menus)
+                      joined_sources=joined_menus)
     return p
 
 
