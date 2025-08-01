@@ -92,20 +92,19 @@ def screen() -> None:
         options={'cookie_accept_text': 'Přijmout'}))
 
 
-actions = {
-    'week': week,
-    'day': day,
-    'chat': chat,
-    # testing actions
-    'screen': screen
-}
-
-
 def main():
     if len(sys.argv) < 2:
         print("Usage: python main.py 'your query here'")
         sys.exit(1)
     user_query = sys.argv[1]
+
+    actions = {
+        'week': week,
+        'day': day,
+        'chat': chat,
+        # testing actions
+        'screen': screen
+    }
 
     if user_query not in actions:
         print('Use one of these: {week, day, chat, screen}.')
