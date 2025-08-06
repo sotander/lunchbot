@@ -8,7 +8,7 @@ Lunchbot is a Python-based application that uses local language models to extrac
 
 - Ollama version 0.10.0 or newer
 - Ollama must be running on the port defined in `./lunchbot/config.py`
-- Set the context length to at least 40960:
+- **IMPORTANT** Set the context length to at least 40960:
   export OLLAMA_CONTEXT_LENGTH=40960
 - Pull the model defined in `./lunchbot/config.py`. The model must have the `tool` label in Ollama.
 
