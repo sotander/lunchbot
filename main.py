@@ -71,9 +71,9 @@ def chat() -> None:
     messages = [{"role": "system", "content": system_prompt}]
     while True:
         # Process user input
-        user_input = input("You: ")
+        user_input = input(colored('You: ', 'blue'))
         if not user_input or user_input == 'q' or user_input == 'quit' or user_input == 'exit':
-            print('Bye.')
+            print(colored('Bye.', 'magenta'))
             break  # exit loop on empty input or keyword TODO: exit keywords
         messages.append({"role": "user", "content": user_input})
 
@@ -81,7 +81,7 @@ def chat() -> None:
         self_conv = chat_llm(messages,
                              tools={"get_todays_summary": get_todays_summary},
                              think_in_response=False)  # TODO; IDK if include it or not
-        print(f'Bot: {self_conv[-1]}\n')
+        print(colored(f'Bot: {self_conv[-1]}\n', 'red'))
         messages.append({"role": "assistant", "content": self_conv[-1]})
 
 
