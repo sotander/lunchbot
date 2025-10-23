@@ -3,7 +3,8 @@ import sys
 import os
 from termcolor import colored
 from datetime import datetime
-from lunchbot.config import URLS, URLS_VISUAL, MODEL_NAME, SYSTEM_PROMPT
+from lunchbot.config import URLS, URLS_VISUAL, MODEL_NAME, SYSTEM_PROMPT, \
+     FUNC_DESC, FORMAT_PROMPT
 from lunchbot.fetcher import get_domain_without_tld, get_html_with_playwright
 from lunchbot.llm_client import build_extract_prompt, build_summary_prompt, \
      query_llm, chat_llm
@@ -66,9 +67,14 @@ def day() -> None:
 def chat() -> None:
     with open(SYSTEM_PROMPT, 'r', encoding='utf-8') as f:
         system_prompt = f.read()
-    system_prompt = f"{system_prompt} You can retreive a today's lunch \
-            menus by calling a function 'get_todays_summary' if needed."
+    with open(FUNC_DESC, 'r', encoding='utf-8') as f:
+        func_descriptions = f.read()
+    with open(FORMAT_PROMPT, 'r', encoding='utf-8') as f:
+        format_prompt = f.read()
+    
+    system_prompt = f"{system_prompt}\n{func_descriptions}\n{format_prompt}"
     messages = [{"role": "system", "content": system_prompt}]
+
     while True:
         # Process user input
         user_input = input(colored('You: ', 'blue'))
@@ -86,10 +92,12 @@ def chat() -> None:
 
 
 def screen() -> None:
-    print(read_screenshot(
-        'https://udrevaka.cz/pages/poledni-menu',
-        'screen.png',
-        options={'cookie_accept_text': 'Přijmout'}))
+    print(read_screenshot('https://www.menicka.cz/2609-pizzeria-al-capone.html#m','screen.png',
+        options={'restaurant_name':'AlCapone','cookie_accept_text':'Consent','first':True}))
+    #print(read_screenshot(
+    #    'https://udrevaka.cz/pages/poledni-menu',
+    #    'screen.png',
+    #    options={'cookie_accept_text': 'Přijmout'}))
 
 
 def main():

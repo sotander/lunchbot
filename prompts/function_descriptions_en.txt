@@ -1,0 +1,2 @@
+[Available functions with description]
+You can retreive a today's lunch menus by calling a function 'get_todays_summary' if needed.
