@@ -1,6 +1,8 @@
-# import requests
+import requests
 from playwright.sync_api import sync_playwright
 import re
+import json
+from datetime import date
 
 
 def fetch_urls(url_list):
@@ -54,3 +56,29 @@ def get_domain_without_tld(url: str) -> str:
         return parts[-2]  # second-to-last part
     return parts[0]
 
+
+def fetch_lepsimenu():
+    url = "https://www.lepsimenu.cz/api/menus"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0",
+        "Accept": "*/*",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Referer": "https://www.lepsimenu.cz/",
+        "DNT": "1",
+        "Sec-GPC": "1",
+        "Connection": "keep-alive",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "Priority": "u=0",
+        "TE": "trailers",
+    }
+
+    today = date.today()
+    formatted_date = today.strftime("%Y-%m-%d")
+    params = {"date": formatted_date}
+    response = requests.get(url, headers=headers, params=params)
+    data = response.json()
+
+    with open(f"data/lepsimenu_{formatted_date}.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
